@@ -8,6 +8,17 @@ void add(long long *pointer, long long value)
   *pointer = sum;
 }
 
+void* threadRoutine(void* arg)
+{
+  int its = *((int*)arg[0]);
+  int count = *((int*)arg[1]);
+  int i = 0;
+  for (i = 0; i < its; i++)
+    count++;
+  for (i = 0; i < its;i++)
+    count--;
+  return NULL;
+}
 
 int main (int argc, char* argv[])
 {
@@ -15,6 +26,7 @@ int main (int argc, char* argv[])
   int numThreads=1;
   int numIts=1;
   char input;
+  
   while(1)
     {
       static struct option long_options[] =
@@ -39,6 +51,10 @@ int main (int argc, char* argv[])
 	}
     }
   long long count = 0;
-
+  struct timespec time_init;
+  if (clock_gettime(CLOCK_MONOTINIC, time_init))
+      perror("uhoh");
+  
+   
 
 }
