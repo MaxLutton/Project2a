@@ -12,13 +12,12 @@ void add(long long *pointer, long long value)
 
 void* threadRoutine(void* arg)
 {
-  int its = *((int*)arg[0]);
-  long long* count = ((long long*)arg[1]);
+  struct argument* = arg; 
   int i = 0;
   for (i = 0; i < its; i++)
-    add(&count, 1); 
+    add(argument->countPtr, 1); 
   for (i = 0; i < its;i++)
-    add(&count, -1);
+    add(argument->countPtr, -1);
   return NULL;
 }
 
@@ -56,27 +55,36 @@ int main (int argc, char* argv[])
   long long count = 0;
   struct timespec time_init;
   struct timespec time_fin;
+  
+  //use this struct to pass argument to thread routines
+  struct argument
+  {
+    long long* countPtr;
+    int howMuch;
+  };
+
+  
   clock_gettime(CLOCK_MONOTONIC, &time_init);
   int workPerThread = numIts / numThreads;
   int leftOver = numIts % numThreads;
   int i = 0;
   pthread_t* ids = (pthread_t*)malloc(sizeof(pthread_id)*numThreads);
+  struct argument* args = (argument*)malloc(sizeof(argument*)*numThreads);
+  
   for (i = 0; i < numThreads; i++)
     {
       if (leftOver > 0)
 	{
-	  void arg[2];
-	  arg[0] = workPerThread + 1;
-	  arg[1] = &count; 
+	  args[i]->countPtr = &count; 
+	  args[i]->howMuch  = workPerThread + 1;
 	  leftOver--;
-	  pthread_create(ids[i], NULL, threadRoutine, arg);
+	  pthread_create(ids[i], NULL, threadRoutine, (void*)args[i]);
 	}
       else
 	{
-	  void irg[2];
-	  irg[0] = workPerThread;
-	  irg[1] = &count;
-	  pthread_create(ids[i], NULL, threadRoutine, irg);
+	  args[i]->countPtr = &count;
+	  args[i]->howMuch = workPerThread;
+	  pthread_create(ids[i], NULL, threadRoutine, (void*)args[i]);
 	}
     }
   for (i = 0; i < numThreads; i++)
