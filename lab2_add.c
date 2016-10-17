@@ -8,6 +8,9 @@
 #include <sched.h>
 
 int opt_yield = 0;
+int mutex = 0;
+pthread_mutex_t lock;
+
 //use this struct to pass argument to thread routines
 struct argument
 {
@@ -20,7 +23,11 @@ void add(long long *pointer, long long value)
   long long sum = *pointer + value;
   if (opt_yield)
     sched_yield();
+  if (mutex)
+    pthread_mutex_lock(&lock);
   *pointer = sum;
+  if (mutex)
+    pthread_mutex_unlock(&lock);
 }
 
 void* threadRoutine(void* arg)
@@ -44,6 +51,7 @@ int main (int argc, char* argv[])
   char input;
   int errnum = 0;
   
+  
   while(1)
     {
       static struct option long_options[] =
@@ -51,10 +59,11 @@ int main (int argc, char* argv[])
 	  {"threads", required_argument, 0, 'a'},
 	  {"iterations", required_argument, 0, 'b'},
 	  {"yield", no_argument, 0, 'c'},
+	  {"sync", required_argument, 0, 'd'},
 	  {0,0, 0, 0}
 	};
       int option_index = 0;
-      c = getopt_long(argc, argv,"a:b:", long_options, &option_index);
+      c = getopt_long(argc, argv,"a:b:cd:", long_options, &option_index);
 
       if (c == -1)
 	break;
@@ -68,13 +77,17 @@ int main (int argc, char* argv[])
 	  break;
 	case 'c':
 	  opt_yield = 1;
+	  break;
+	case 'd':
+	  if(strdup(optarg) == "m")
+	    mutex = 1;
+	  break;
 	}
     }
   long long count = 0;
   struct timespec time_init;
   struct timespec time_fin;
 
-  
   int workPerThread = numIts / numThreads;
   int leftOver = numIts % numThreads;
   int i = 0;
@@ -98,6 +111,13 @@ int main (int argc, char* argv[])
 	  args[i]->howMuch = workPerThread;
 	}
     }
+
+  if (mutex)
+    {
+      if(pthread_mutex_init(&lock, NULL) !=0)
+	perror("mutex failed");
+    }
+    
   //get initial time right before creating threads
   clock_gettime(CLOCK_MONOTONIC, &time_init);
   for (i = 0; i < numThreads; i++)
@@ -119,6 +139,10 @@ int main (int argc, char* argv[])
     free(args[i]);
   free(args);
   free(ids);
+
+  if (mutex)
+    pthread_mutex_destroy(&lock);
+  
   strerror(errnum);
   if (errnum)
     exit(errnum);
