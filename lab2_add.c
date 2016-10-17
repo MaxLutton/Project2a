@@ -3,6 +3,17 @@
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+
+  
+//use this struct to pass argument to thread routines
+struct argument
+{
+  long long* countPtr;
+  int howMuch;
+};
 
 void add(long long *pointer, long long value)
 {
@@ -12,12 +23,14 @@ void add(long long *pointer, long long value)
 
 void* threadRoutine(void* arg)
 {
-  struct argument* = arg; 
+  struct argument* um= (struct argument*)arg;
   int i = 0;
+  long long* c = um->countPtr;
+  int its = um->howMuch;
   for (i = 0; i < its; i++)
-    add(argument->countPtr, 1); 
+    add(c, 1); 
   for (i = 0; i < its;i++)
-    add(argument->countPtr, -1);
+    add(c, -1);
   return NULL;
 }
 
@@ -55,21 +68,14 @@ int main (int argc, char* argv[])
   long long count = 0;
   struct timespec time_init;
   struct timespec time_fin;
-  
-  //use this struct to pass argument to thread routines
-  struct argument
-  {
-    long long* countPtr;
-    int howMuch;
-  };
 
   
   clock_gettime(CLOCK_MONOTONIC, &time_init);
   int workPerThread = numIts / numThreads;
   int leftOver = numIts % numThreads;
   int i = 0;
-  pthread_t* ids = (pthread_t*)malloc(sizeof(pthread_id)*numThreads);
-  struct argument* args = (argument*)malloc(sizeof(argument*)*numThreads);
+  pthread_t** ids = (pthread_t**)malloc(sizeof(pthread_t)*numThreads);
+  struct argument** args = (struct argument**)malloc(sizeof(struct argument*)*numThreads);
   
   for (i = 0; i < numThreads; i++)
     {
@@ -88,14 +94,14 @@ int main (int argc, char* argv[])
 	}
     }
   for (i = 0; i < numThreads; i++)
-    pthread_join(ids[i], NULL);
+    pthread_join(*(ids[i]), NULL);
   clock_gettime(CLOCK_MONOTONIC, &time_fin);
   int totalOps = 2 * numThreads * numIts;
   long runtime = time_fin.tv_nsec - time_init.tv_nsec;
   long avg = runtime / totalOps;
   
   printf("add-none,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count );
-  strerr(errnum);
+  strerror(errnum);
   if (errnum)
     exit(errnum);
   else
