@@ -5,9 +5,9 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sched.h>
 
-
-  
+int opt_yield = 0;
 //use this struct to pass argument to thread routines
 struct argument
 {
@@ -18,6 +18,8 @@ struct argument
 void add(long long *pointer, long long value)
 {
   long long sum = *pointer + value;
+  if (opt_yield)
+    sched_yield();
   *pointer = sum;
 }
 
@@ -48,6 +50,7 @@ int main (int argc, char* argv[])
 	{
 	  {"threads", required_argument, 0, 'a'},
 	  {"iterations", required_argument, 0, 'b'},
+	  {"yield", no_argument, 0, 'c'},
 	  {0,0, 0, 0}
 	};
       int option_index = 0;
@@ -63,6 +66,8 @@ int main (int argc, char* argv[])
 	case 'b':
 	  numIts = atoi(strdup(optarg));
 	  break;
+	case 'c':
+	  opt_yield = 1;
 	}
     }
   long long count = 0;
@@ -104,8 +109,11 @@ int main (int argc, char* argv[])
   int totalOps = 2 * numThreads * numIts;
   long runtime = time_fin.tv_nsec - time_init.tv_nsec;
   long avg = runtime / totalOps;
-  
-  printf("add-none,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count );
+
+  if (!opt_yield)
+    printf("add-none,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count );
+  else if (opt_yield)
+    printf("add-yield,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count);
   //memory management
   for (i = 0; i < numThreads; i++)
     free(args[i]);
