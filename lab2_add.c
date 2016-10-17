@@ -70,41 +70,47 @@ int main (int argc, char* argv[])
   struct timespec time_fin;
 
   
-  clock_gettime(CLOCK_MONOTONIC, &time_init);
   int workPerThread = numIts / numThreads;
   int leftOver = numIts % numThreads;
   int i = 0;
   pthread_t* ids = malloc(sizeof(pthread_t)*numThreads);
   struct argument** args = malloc(sizeof(struct argument*)*numThreads);
   
+  //initialize arguments for string routins
   for (i = 0; i < numThreads; i++)
     {
       if (leftOver > 0)
 	{
 	  args[i] = malloc(sizeof(struct argument));
-	  args[i]->countPtr = malloc(sizeof(long long*));
 	  args[i]->countPtr = &count;
 	  args[i]->howMuch  = workPerThread + 1;
 	  leftOver--;
-	  pthread_create(ids+i, NULL, threadRoutine, (void*)args[i]);
 	}
       else
 	{
 	  args[i] = malloc(sizeof(struct argument));
-	  args[i]->countPtr = malloc(sizeof(long long*));
 	  args[i]->countPtr = &count;
 	  args[i]->howMuch = workPerThread;
-	  pthread_create(ids + i, NULL, threadRoutine, (void*)args[i]);
 	}
     }
+  //get initial time right before creating threads
+  clock_gettime(CLOCK_MONOTONIC, &time_init);
+  for (i = 0; i < numThreads; i++)
+    pthread_create(ids + i, NULL, threadRoutine, (void*)args[i]);
   for (i = 0; i < numThreads; i++)
     pthread_join((ids[i]), NULL);
+  //finish time right after closing threads
   clock_gettime(CLOCK_MONOTONIC, &time_fin);
   int totalOps = 2 * numThreads * numIts;
   long runtime = time_fin.tv_nsec - time_init.tv_nsec;
   long avg = runtime / totalOps;
   
   printf("add-none,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count );
+  //memory management
+  for (i = 0; i < numThreads; i++)
+    free(args[i]);
+  free(args);
+  free(ids);
   strerror(errnum);
   if (errnum)
     exit(errnum);
