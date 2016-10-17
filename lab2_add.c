@@ -74,27 +74,31 @@ int main (int argc, char* argv[])
   int workPerThread = numIts / numThreads;
   int leftOver = numIts % numThreads;
   int i = 0;
-  pthread_t** ids = (pthread_t**)malloc(sizeof(pthread_t)*numThreads);
-  struct argument** args = (struct argument**)malloc(sizeof(struct argument*)*numThreads);
+  pthread_t* ids = malloc(sizeof(pthread_t)*numThreads);
+  struct argument** args = malloc(sizeof(struct argument*)*numThreads);
   
   for (i = 0; i < numThreads; i++)
     {
       if (leftOver > 0)
 	{
-	  args[i]->countPtr = &count; 
+	  args[i] = malloc(sizeof(struct argument));
+	  args[i]->countPtr = malloc(sizeof(long long*));
+	  args[i]->countPtr = &count;
 	  args[i]->howMuch  = workPerThread + 1;
 	  leftOver--;
-	  pthread_create(ids[i], NULL, threadRoutine, (void*)args[i]);
+	  pthread_create(ids+i, NULL, threadRoutine, (void*)args[i]);
 	}
       else
 	{
+	  args[i] = malloc(sizeof(struct argument));
+	  args[i]->countPtr = malloc(sizeof(long long*));
 	  args[i]->countPtr = &count;
 	  args[i]->howMuch = workPerThread;
-	  pthread_create(ids[i], NULL, threadRoutine, (void*)args[i]);
+	  pthread_create(ids + i, NULL, threadRoutine, (void*)args[i]);
 	}
     }
   for (i = 0; i < numThreads; i++)
-    pthread_join(*(ids[i]), NULL);
+    pthread_join((ids[i]), NULL);
   clock_gettime(CLOCK_MONOTONIC, &time_fin);
   int totalOps = 2 * numThreads * numIts;
   long runtime = time_fin.tv_nsec - time_init.tv_nsec;
