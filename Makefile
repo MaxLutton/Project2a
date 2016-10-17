@@ -1,2 +1,2 @@
 default:
-	gcc -g -lpthread -lrt -o add lab2_add.c
+	gcc -g -lpthread -lrt -o lab2_add lab2_add.c
