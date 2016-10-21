@@ -76,6 +76,13 @@ check:
 	./lab2_add --threads=4 --iterations=1000 --yield --sync=s >>lab2_add.csv
 	./lab2_add --threads=8 --iterations=1000 --yield --sync=s >>lab2_add.csv
 	./lab2_add --threads=12 --iterations=1000 --yield --sync=s >>lab2_add.csv
+#CAS with yield
+	./lab2_add --threads=1 --iterations=10000 --yield --sync=c >>lab2_add.csv
+	./lab2_add --threads=2 --iterations=10000 --yield --sync=c >>lab2_add.csv
+	./lab2_add --threads=4 --iterations=10000 --yield --sync=c >>lab2_add.csv
+	./lab2_add --threads=8 --iterations=10000 --yield --sync=c >>lab2_add.csv
+	./lab2_add --threads=12 --iterations=10000 --yield --sync=c >>lab2_add.csv
+
 #just mutex
 	./lab2_add --thread=1 --iterations=10000 --sync=m >>lab2_add.csv
 	./lab2_add --thread=2 --iterations=10000 --sync=m >>lab2_add.csv
@@ -88,3 +95,9 @@ check:
 	./lab2_add --thread=4 --iterations=1000 --sync=s >>lab2_add.csv
 	./lab2_add --thread=8 --iterations=1000 --sync=s >>lab2_add.csv
 	./lab2_add --thread=12 --iterations=10000 --sync=s >>lab2_add.csv
+#just CAS
+	./lab2_add --thread=1 --iterations=10000 --sync=c >>lab2_add.csv
+	./lab2_add --thread=2 --iterations=10000 --sync=c >>lab2_add.csv
+	./lab2_add --thread=4 --iterations=10000 --sync=c >>lab2_add.csv
+	./lab2_add --thread=8 --iterations=10000 --sync=c >>lab2_add.csv
+	./lab2_add --thread=12 --iterations=10000 --sync=c >>lab2_add.csv

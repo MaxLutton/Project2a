@@ -26,6 +26,18 @@ void add(long long *pointer, long long value)
     while(__sync_lock_test_and_set(&otherLock, 1));
   if (mutex)
     pthread_mutex_lock(&lock);
+  //does the add itself, so get out of here after completio
+  if (CAS)
+    {
+      long long previous;
+      do
+	{
+	  previous = *pointer;
+	  if (opt_yield)
+	    sched_yield();
+	}while(__sync_val_compare_and_swap( pointer, previous, previous + value)!= previous);
+      return;
+    }
   long long sum = *pointer + value;
   if (opt_yield)
     sched_yield();
