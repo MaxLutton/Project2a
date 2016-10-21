@@ -12,6 +12,7 @@ int mutex = 0;
 int spin = 0;
 pthread_mutex_t lock;
 int otherLock;
+int CAS;
 //use this struct to pass argument to thread routines
 struct argument
 {
@@ -91,6 +92,8 @@ int main (int argc, char* argv[])
 	    mutex = 1;
 	  if (str  == 's')
 	    spin = 1;
+	  if (str == 'c')
+	    CAS = 1;
 	  break;
 	}
     }
@@ -147,9 +150,11 @@ int main (int argc, char* argv[])
     strcat(testName, "-m");
   if (spin)
     strcat(testName, "-s");
-  if (!spin & !mutex & !opt_yield)
+  if(CAS)
+    strcat(testName, "-c");
+  if (!spin & !mutex)
     strcat(testName, "-none");
-    printf("%s,%d,%d,%d,%d,%d,%d",testName,numThreads, numIts, totalOps, runtime, avg, count );
+    printf("%s,%d,%d,%d,%d,%d,%d\n",testName,numThreads, numIts, totalOps, runtime, avg, count );
     /*else if (opt_yield)
       printf("add-yield,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count);*/
   //memory management
