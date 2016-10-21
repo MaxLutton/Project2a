@@ -9,8 +9,9 @@
 
 int opt_yield = 0;
 int mutex = 0;
+int spin = 0;
 pthread_mutex_t lock;
-
+int otherLock;
 //use this struct to pass argument to thread routines
 struct argument
 {
@@ -20,15 +21,20 @@ struct argument
 
 void add(long long *pointer, long long value)
 {
+  if (spin)
+    while(__sync_lock_test_and_set(&otherLock, 1));
+  if (mutex)
+    pthread_mutex_lock(&lock);
   long long sum = *pointer + value;
   if (opt_yield)
     sched_yield();
-  if (mutex)
-    pthread_mutex_lock(&lock);
-  *pointer = sum;
+   *pointer = sum;
   if (mutex)
     pthread_mutex_unlock(&lock);
+  if(spin)
+    __sync_lock_release(&otherLock, 0);
 }
+
 
 void* threadRoutine(void* arg)
 {
@@ -50,8 +56,9 @@ int main (int argc, char* argv[])
   int numIts=1;
   char input;
   int errnum = 0;
-  
-  
+  char* testName = malloc(sizeof(char)*20);//more than enough
+  strcat(testName, "add");
+  char str;
   while(1)
     {
       static struct option long_options[] =
@@ -70,17 +77,20 @@ int main (int argc, char* argv[])
       switch (c)
 	{
 	case 'a':
-	  numThreads  = atoi(strdup(optarg));
+	  numThreads  = atoi((strdup(optarg)));
 	  break;
 	case 'b':
-	  numIts = atoi(strdup(optarg));
+	   numIts  = atoi(strdup(optarg));
 	  break;
 	case 'c':
 	  opt_yield = 1;
 	  break;
 	case 'd':
-	  if(strdup(optarg) == "m")
+	   str  = *(strdup(optarg));
+	  if(str  == 'm')
 	    mutex = 1;
+	  if (str  == 's')
+	    spin = 1;
 	  break;
 	}
     }
@@ -93,7 +103,7 @@ int main (int argc, char* argv[])
   int i = 0;
   pthread_t* ids = malloc(sizeof(pthread_t)*numThreads);
   struct argument** args = malloc(sizeof(struct argument*)*numThreads);
-  
+
   //initialize arguments for string routins
   for (i = 0; i < numThreads; i++)
     {
@@ -130,18 +140,25 @@ int main (int argc, char* argv[])
   long runtime = time_fin.tv_nsec - time_init.tv_nsec;
   long avg = runtime / totalOps;
 
-  if (!opt_yield)
-    printf("add-none,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count );
-  else if (opt_yield)
-    printf("add-yield,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count);
+  //configure output string
+  if (opt_yield)
+    strcat(testName, "-yield");
+  if (mutex)
+    strcat(testName, "-m");
+  if (spin)
+    strcat(testName, "-s");
+  if (!spin & !mutex & !opt_yield)
+    strcat(testName, "-none");
+    printf("%s,%d,%d,%d,%d,%d,%d",testName,numThreads, numIts, totalOps, runtime, avg, count );
+    /*else if (opt_yield)
+      printf("add-yield,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count);*/
   //memory management
   for (i = 0; i < numThreads; i++)
     free(args[i]);
   free(args);
   free(ids);
-
-  if (mutex)
-    pthread_mutex_destroy(&lock);
+  free(testName);
+ pthread_mutex_destroy(&lock);
   
   strerror(errnum);
   if (errnum)
