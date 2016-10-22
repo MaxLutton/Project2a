@@ -1,6 +1,8 @@
 default:
 	gcc -g -lpthread -lrt -o lab2_add lab2_add.c
-check:
+	gcc -g -lpthread -lrt -o lab2_list lab2_add.c SortedList.c
+
+tests:
 #none
 	rm -f lab2_add.csv
 	./lab2_add --threads=1 --iterations=100 >>lab2_add.csv
