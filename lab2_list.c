@@ -7,11 +7,11 @@
 #include <sched.h>
 #include <stdio.h>
 #include <errno.h>
-
+/*
 int opt_yield = 0;
-int yieldI = 0;
-int yieldD = 0;
-int yieldL = 0;
+int INSERT_YIELD = 0;
+int DELETE_YIELD = 0;
+int LOOKUP_YIELD = 0;*/
 char* values;
 SortedList_t* head;
  
@@ -90,11 +90,11 @@ int main(int argc, char* argv[])
 	  for(j = 0; j < n; j++)
 	    {
 	      if (str[j] == 'i')
-		yieldI=1;
+		INSERT_YIELD=1;
 	      else if (str[j] == 'd')
-		yieldD=1;
+		DELETE_YIELD=1;
 	      else if (str[j] == 'l')
-		yieldL=1;
+		LOOKUP_YIELD=1;
 	    }
 	  free(str);
 	  break;
@@ -155,11 +155,11 @@ int main(int argc, char* argv[])
   long avg = runtime / totalOps;
 
   //configure output string
-  if (yieldI)
+  if (INSERT_YIELD)
     strcat(testName, "i");
-  if (yieldD)
+  if (DELETE_YIELD)
     strcat(testName, "d");
-  if (yieldL)
+  if (LOOKUP_YIELD)
     strcat(testName, "l");
   if (!opt_yield)
     strcat(testName, "none");
