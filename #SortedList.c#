@@ -1,0 +1,81 @@
+#include "SortedList.h"
+#include <string.h>
+
+void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
+{
+  //empty list
+  if (list->next == NULL)
+    {
+      list->next = element;
+      element->previous = list;
+      element->next = NULL;
+      return;
+    }
+  //dont want to de-reference head ptr's key
+  SortedListElement_t* temp = list->next;
+  
+  while(temp->next != NULL)
+    {
+      //element key < list[i] key
+      if (strcmp(element->key, temp->key) < 0)
+	{
+	  (temp->previous)->next = element;
+	  element->previous = temp->previous;
+	  temp->previous = element;
+	  element->next = temp;
+	  return;
+	}
+      temp = temp->next;
+    }
+
+  else if (temp->next == NULL)
+    {
+      temp->next = element;
+      element->previous = list[i;
+      element->next = NULL;
+      return;
+    }
+}
+
+int SortedList_delete( SortedListElement_t *element)
+{
+  if (element->previous->next == element && element->next->previous == element)
+    {
+      (element->previous)->next = element->next;
+      (element->next)->previous = element->previous;
+      free(element);
+      return 0;
+    }
+  else
+    return 1;
+}
+SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key)
+{
+  if (list->next == NULL)
+    return NULL;
+  SortedListElement_t*  temp = list;
+  while(temp->next != NULL)
+    {
+      if (temp->key == key)
+	return list[i];
+      temp = temp->next;
+    }
+  //check last item in list
+  if (temp->key == key)
+    return temp[i];
+  else
+    return NULL;
+}
+
+int SortedList_length(SortedList_t *list)
+{
+  if (list->next == NULL)
+    return 0;
+  int count = 1;
+  while (list[count]->next != NULL)
+    {
+      if (list[count]->previous->key > list[count]->key ||
+	  list[count]->key > list[count]
+
+
+  

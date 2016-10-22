@@ -12,6 +12,7 @@ int opt_yield = 0;
 int INSERT_YIELD = 0;
 int DELETE_YIELD = 0;
 int LOOKUP_YIELD = 0;*/
+int opt_yield = 0;
 char* values;
 SortedList_t* head;
  
@@ -83,18 +84,19 @@ int main(int argc, char* argv[])
 	  break;
 	case 'c':
 	  //set flags
-	  opt_yield = 0;
+	  opt_yield = 1;
 	  int n = strlen(strdup(optarg));
 	  char* str = malloc(sizeof(char)*n);
+	  str = strdup(optarg);
 	  int j =0;
 	  for(j = 0; j < n; j++)
 	    {
 	      if (str[j] == 'i')
-		INSERT_YIELD=1;
+		INSERT_YIELD;
 	      else if (str[j] == 'd')
-		DELETE_YIELD=1;
+		DELETE_YIELD;
 	      else if (str[j] == 'l')
-		LOOKUP_YIELD=1;
+		LOOKUP_YIELD;
 	    }
 	  free(str);
 	  break;

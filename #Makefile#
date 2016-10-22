@@ -1,6 +1,6 @@
 default:
 	gcc -g -lpthread -lrt -o lab2_add lab2_add.c
-	gcc -g -lpthread -lrt -o lab2_list lab2_list.c SortedList.c
+	gcc -g -lpthread -lrt -o lab2_list lab2_add.c SortedList.c
 
 tests:
 #none
@@ -103,3 +103,5 @@ tests:
 	./lab2_add --thread=4 --iterations=10000 --sync=c >>lab2_add.csv
 	./lab2_add --thread=8 --iterations=10000 --sync=c >>lab2_add.csv
 	./lab2_add --thread=12 --iterations=10000 --sync=c >>lab2_add.csv
+test2:
+	./lab2_list --threads=
