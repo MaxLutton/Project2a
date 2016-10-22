@@ -86,11 +86,10 @@ int SortedList_length(SortedList_t *list)
   //invalid head ptr
   if (list == NULL)
     return -1;
-  if (list->next->key == NULL)
-    return -1;
   //empty list
-  if (list->next == NULL)
+ if (list->next == NULL)
     return 0;
+ 
   int count = 1;
   SortedListElement_t* temp = list->next;
   while (temp->next != NULL)

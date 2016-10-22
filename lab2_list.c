@@ -45,6 +45,11 @@ void* threadRoutine(void* arg)
   for (i = 0; i < n; i++)
     {
       SortedListElement_t* temp = SortedList_lookup(head, &(values[begin+i]));
+      if (temp == NULL)
+	{
+	  perror("couldn't find it!");
+	  return;
+	}
       SortedList_delete(temp);
       free(temp);
     }
@@ -155,7 +160,12 @@ int main(int argc, char* argv[])
   int totalOps = 3 * numThreads * numIts;
   long runtime = time_fin.tv_nsec - time_init.tv_nsec;
   long avg = runtime / totalOps;
-
+  if (SortedList_length(head))
+    {
+      perror("corrupted list");
+      strerror(errnum);
+      exit(errnum);
+    }
   //configure output string
   if (INSERT_YIELD)
     strcat(testName, "i");
