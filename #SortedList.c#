@@ -74,7 +74,8 @@ SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key)
   if (temp->key == key)
     return temp;
   else
-    return NULL;
+    {
+      perror("co
 }
 
 int SortedList_length(SortedList_t *list)

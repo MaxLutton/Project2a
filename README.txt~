@@ -1,0 +1,18 @@
+QUESTION 2.1.1 - causing conflicts:
+
+Both of these occurances are due to the nature of what causes the failures. Theprogram fails when threads write to the counter in between each other's reads, so the resulting value is incorrect. The more iterations each thread has, the greater the likelihood of the conflict occurring. The significantly smaller number of iterations seldom fail because there is simply less opportunity for the race conditions to take affect.
+
+QUESTION 2.1.2 - cost of yielding:
+
+The yields go much slower because they are causing excess context switches. This additional time goes to the overhead involved in context switches--loading stack frames, setting registers, etc. It is possible to get valid per-operation timings while using the yield option. You just have to increase the number of iterations significantly, thus diminishing the percentage of time made up by context switches.
+
+QUESTION 2.1.3 - measurement errors:
+
+The average cost per operation drops with increasing iterations because the time ratio of actual computation time to start-up costs is increasing. If the costs per iteration is a funciton of the number of iterations, the cost/instruction will eventually converge on its lower limit. After a certain number of iterations, the cost per iteration will stop decreasing.
+
+QUESTION 2.1.4 - costs of serialization
+
+All of the operations perform similarly for low numbers of threads because there are relatively fewer opportunites for the race conditions to take effect--the threads aren't writing to the counter at the same time. My data actually did not show the 3 protected operations slowing down as the number of threads rose. Only the spin increased in cost. Spin definitely increased in cost because because, with more threads, they spent increasing amounts of time spinning, doing no work when another could have done work.
+
+QUESTION 2.2.1 - scalability of Mutex
+

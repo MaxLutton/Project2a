@@ -57,7 +57,7 @@ void* threadRoutine(void* arg)
       if (temp == NULL)
 	{
 	  perror("couldn't find it!");
-	  return;
+	  exit(1);
 	}
       SortedList_delete(temp);
       free(temp);
@@ -68,6 +68,22 @@ void* threadRoutine(void* arg)
     __sync_lock_release(&otherLock, 0);
   free(elements);
   return NULL;
+}
+
+struct timespec diff(struct timespec start, struct timespec end)
+{
+  struct timespec temp;
+  if ((end.tv_nsec - start.tv_nsec) < 0)
+    {
+      temp.tv_sec = end.tv_sec - start.tv_sec-1;
+      temp.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+    }
+    else
+      {
+	temp.tv_sec = end.tv_sec - start.tv_sec;
+	temp.tv_nsec = end.tv_nsec - start.tv_nsec;
+      }
+    return temp;
 }
 
 int main(int argc, char* argv[])
@@ -185,8 +201,10 @@ int main(int argc, char* argv[])
     pthread_join(ids[i], NULL);
   clock_gettime(CLOCK_MONOTONIC, &time_fin);
   int totalOps = 3 * numThreads * numIts;
-  long runtime = time_fin.tv_nsec - time_init.tv_nsec;
-  long avg = runtime / totalOps;
+  
+  struct timespec time_diff = diff(time_init, time_fin);
+  
+  long avg = (time_diff.tv_nsec) / totalOps;
   if (SortedList_length(head))
     {
       perror("corrupted list");
@@ -194,11 +212,11 @@ int main(int argc, char* argv[])
       exit(errnum);
     }
   //configure output string
-  if (INSERT_YIELD)
+  if (opt_yield & INSERT_YIELD)
     strcat(testName, "i");
-  if (DELETE_YIELD)
+  if (opt_yield & DELETE_YIELD)
     strcat(testName, "d");
-  if (LOOKUP_YIELD)
+  if (opt_yield & LOOKUP_YIELD)
     strcat(testName, "l");
   if (!opt_yield)
     strcat(testName, "none");
@@ -209,7 +227,7 @@ int main(int argc, char* argv[])
     strcat(testName, "s");
   else
     strcat(testName, "none");
-  printf("%s,%d,%d,1,%d,%d,%d\n",testName, numThreads, numIts, totalOps, runtime, avg); 
+  printf("%s,%d,%d,1,%d,%d,%d\n",testName, numThreads, numIts, totalOps, time_diff.tv_nsec, avg); 
   strerror(errnum);
   if (errnum)
     exit(errnum);

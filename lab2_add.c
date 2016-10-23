@@ -20,6 +20,23 @@ struct argument
   int howMuch;
 };
 
+
+struct timespec diff(struct timespec start, struct timespec end)
+{
+  struct timespec temp;
+  if ((end.tv_nsec - start.tv_nsec) < 0)
+    {
+      temp.tv_sec = end.tv_sec - start.tv_sec-1;
+      temp.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+    }
+    else
+      {
+	temp.tv_sec = end.tv_sec - start.tv_sec;
+	temp.tv_nsec = end.tv_nsec - start.tv_nsec;
+      }
+    return temp;
+}
+
 void add(long long *pointer, long long value)
 {
   if (spin)
@@ -152,8 +169,8 @@ int main (int argc, char* argv[])
   //finish time right after closing threads
   clock_gettime(CLOCK_MONOTONIC, &time_fin);
   int totalOps = 2 * numThreads * numIts;
-  long runtime = time_fin.tv_nsec - time_init.tv_nsec;
-  long avg = runtime / totalOps;
+  struct timespec time_diff = diff(time_init, time_fin);
+  long avg = (time_diff.tv_nsec) / totalOps;
 
   //configure output string
   if (opt_yield)
@@ -166,7 +183,7 @@ int main (int argc, char* argv[])
     strcat(testName, "-c");
   if (!spin & !mutex)
     strcat(testName, "-none");
-    printf("%s,%d,%d,%d,%d,%d,%d\n",testName,numThreads, numIts, totalOps, runtime, avg, count );
+  printf("%s,%d,%d,%d,%d,%d,%d\n",testName,numThreads, numIts, totalOps, time_diff.tv_nsec, avg, count );
     /*else if (opt_yield)
       printf("add-yield,%d,%d,%d,%d,%d,%d",numThreads, numIts, totalOps, runtime, avg, count);*/
   //memory management
