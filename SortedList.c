@@ -3,19 +3,17 @@
 
 void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
 {
-  if (opt_yield & INSERT_YIELD)
+  //dont want to de-reference head ptr's key
+  SortedListElement_t* temp = list->next;
+ if (opt_yield & INSERT_YIELD)
     sched_yield();
-  //empty list
-  if (list->next == NULL)
+ if (list->next == NULL)
     {
       list->next = element;
       element->prev = list;
       element->next = NULL;
       return;
     }
-  //dont want to de-reference head ptr's key
-  SortedListElement_t* temp = list->next;
-  
   while(temp->next != NULL)
     {
       //element key < list[i] key
@@ -29,7 +27,7 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
 	}
       temp = temp->next;
     }
-  
+ 
   if (temp->next == NULL)
     {
       temp->next = element;
@@ -53,7 +51,6 @@ int SortedList_delete( SortedListElement_t *element)
     {
       (element->prev)->next = element->next;
       (element->next)->prev = element->prev;
-      //free(element);
       return 0;
     }
   else

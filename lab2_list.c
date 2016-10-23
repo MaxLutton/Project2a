@@ -15,7 +15,11 @@ int LOOKUP_YIELD = 0;*/
 int opt_yield = 0;
 char* values;
 SortedList_t* head;
- 
+int mutex = 0;
+int spin = 0;
+int otherLock;
+pthread_mutex_t lock;
+
 struct argument
 {
   int begin;
@@ -30,9 +34,14 @@ void* threadRoutine(void* arg)
   int end = um->end;
   int n = um->work;
 
-  SortedListElement_t** elements = malloc(sizeof(SortedListElement_t*)*n); 
+  SortedListElement_t** elements = malloc(sizeof(SortedListElement_t*)*n);
+
+  if(spin)
+    while(__sync_lock_test_and_set(&otherLock, 1));
+  if(mutex)
+    pthread_mutex_lock(&lock);
+//insert elements into list
   int i = 0;
-  //insert elements into list
   for (i = 0; i < n; i++)
     {
        elements[i] = malloc(sizeof(SortedListElement_t));
@@ -53,6 +62,10 @@ void* threadRoutine(void* arg)
       SortedList_delete(temp);
       free(temp);
     }
+  if (mutex)
+    pthread_mutex_unlock(&lock);
+  if (spin)
+    __sync_lock_release(&otherLock, 0);
   free(elements);
   return NULL;
 }
@@ -63,7 +76,8 @@ int main(int argc, char* argv[])
   int numThreads=1;
   int numIts=1;
   int errnum=0;
-  char* testName = malloc(sizeof(char)*20);//more than enough
+  char* testName = malloc(sizeof(char)*40);//more than enough
+  char s;
   strcat(testName, "list-");
   while(1)
     {
@@ -72,6 +86,7 @@ int main(int argc, char* argv[])
 	  {"threads", required_argument, 0, 'a'},
 	  {"iterations", required_argument, 0, 'b'},
 	  {"yield", required_argument, 0, 'c'},
+	  {"sync", required_argument, 0, 'd'},
 	  {0,0,0,0}
 	};
       int option_index=0;
@@ -104,6 +119,13 @@ int main(int argc, char* argv[])
 		opt_yield |= 0x04;
 	    }
 	  free(str);
+	  break;
+	case 'd':
+	  s = *(strdup(optarg));
+	  if (s == 'm')
+	    mutex = 1;
+	  else if (s == 's')
+	    spin = 1;
 	  break;
 	}
     }
@@ -150,6 +172,11 @@ int main(int argc, char* argv[])
   struct timespec time_init;
   struct timespec time_fin;
 
+  if (mutex)
+    {
+      if(pthread_mutex_init(&lock, NULL) != 0)
+	perror("mutex failed");
+    }
   //get initial time right before creating threads
   clock_gettime(CLOCK_MONOTONIC, &time_init);
   for (i = 0; i < numThreads; i++)
@@ -176,8 +203,13 @@ int main(int argc, char* argv[])
   if (!opt_yield)
     strcat(testName, "none");
   strcat(testName, "-");
-  strcat(testName, "none");
-
+  if(mutex)
+    strcat(testName, "m");
+  else if(spin)
+    strcat(testName, "s");
+  else
+    strcat(testName, "none");
+  printf("%s,%d,%d,1,%d,%d,%d\n",testName, numThreads, numIts, totalOps, runtime, avg); 
   strerror(errnum);
   if (errnum)
     exit(errnum);
