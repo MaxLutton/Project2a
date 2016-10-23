@@ -3,7 +3,7 @@
 
 void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
 {
-  if (INSERT_YIELD && opt_yield)
+  if (opt_yield & INSERT_YIELD)
     sched_yield();
   //empty list
   if (list->next == NULL)
@@ -41,7 +41,7 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element)
 
 int SortedList_delete( SortedListElement_t *element)
 {
-  if (opt_yield && DELETE_YIELD)
+  if (opt_yield & DELETE_YIELD)
     sched_yield();
   //if last element in list
   if (element->next == NULL)
@@ -61,7 +61,7 @@ int SortedList_delete( SortedListElement_t *element)
 }
 SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key)
 {
-  if (opt_yield && LOOKUP_YIELD)
+  if (opt_yield & LOOKUP_YIELD)
     sched_yield();
   if (list->next == NULL)
     return NULL;
@@ -81,7 +81,7 @@ SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key)
 
 int SortedList_length(SortedList_t *list)
 {
-  if (opt_yield && LOOKUP_YIELD)
+  if (opt_yield & LOOKUP_YIELD)
     sched_yield();
   //invalid head ptr
   if (list == NULL)

@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
 	  break;
 	case 'c':
 	  //set flags
-	  opt_yield = 1;
+	  ;
 	  int n = strlen(strdup(optarg));
 	  char* str = malloc(sizeof(char)*n);
 	  str = strdup(optarg);
@@ -97,11 +97,11 @@ int main(int argc, char* argv[])
 	  for(j = 0; j < n; j++)
 	    {
 	      if (str[j] == 'i')
-		INSERT_YIELD;
+		opt_yield |= 0x01;
 	      else if (str[j] == 'd')
-		DELETE_YIELD;
+		opt_yield |= 0x02;
 	      else if (str[j] == 'l')
-		LOOKUP_YIELD;
+		opt_yield |= 0x04;
 	    }
 	  free(str);
 	  break;
